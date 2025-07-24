@@ -1,8 +1,6 @@
-Sure! Below is a **complete and professional `README.md`** for your DevSecOps CI/CD project with a Vite + React app, Terraform, GitHub Actions, AWS, and Kubernetes Sealed Secrets.
 
----
 
-```markdown
+
 # 🚀 DevSecOps CI/CD Pipeline for Vite + React App
 
 This project demonstrates a complete CI/CD pipeline using **Terraform**, **AWS CodePipeline**, **GitHub Actions**, and **Minikube** for deploying a **Vite + React** application with integrated **DevSecOps practices**.
