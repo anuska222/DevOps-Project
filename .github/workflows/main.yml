@@ -1,0 +1,47 @@
+name: DevSecOps CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tfsec-scan:
+    name: Terraform Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+      - name: Run tfsec
+        run: tfsec terraform/
+
+  trivy-scan:
+    name: Docker Image Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Trivy
+        run: |
+          sudo apt-get update && sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update && sudo apt-get install trivy -y
+      - name: Scan Dockerfile
+        run: trivy config .
+
+  deploy:
+    name: Deploy Secrets to Cluster
+    needs: [tfsec-scan, trivy-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install kubeseal
+        run: |
+          wget https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.25.0/kubeseal-0.25.0-linux-amd64.tar.gz
+          tar -xzf kubeseal-0.25.0-linux-amd64.tar.gz
+          sudo install -m 755 kubeseal /usr/local/bin/kubeseal
+      - name: Apply Sealed Secrets
+        run: |
+          kubectl apply -f k8s/secrets/

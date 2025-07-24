@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vite-react-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vite-react-app
+  template:
+    metadata:
+      labels:
+        app: vite-react-app
+    spec:
+      imagePullSecrets:
+        - name: docker-secret
+      containers:
+        - name: vite-react-container
+          image: 562078167718.dkr.ecr.ap-south-1.amazonaws.com/vite-react-app:latest
+          ports:
+            - containerPort: 80
